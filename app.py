@@ -45,8 +45,9 @@ def clean_price(price_str):
 def add_csv():
     with open("inventory.csv") as csvfile:
         data = csv.reader(csvfile)
+        next(data)  # returns the next item in an iterator
         for row in data:
-            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none()   
+            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none() # one_or_none returns none if there isn't a book or returns the book
             # this is going to either return a product if there is one or none if there isn't a book
             if product_in_db == None:
                 product_name = row[0]
@@ -96,11 +97,14 @@ ValueError: invalid literal for int() with base 10: 'date_updated'
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
     #app()
-    add_csv() # we add the csv values to the database
+
+    #add_csv() # we add the csv values to the database
+    
     #clean_date("7/26/2018")  # used this line to test the split function for the date data
-    #clean_price("$7.99")
-    for product in session.query(Product):
-        print(product)
+    #clean_price("$7.99")   # we test the clean_price function, as well as the split function in it
+
+    #for product in session.query(Product): # we loop through all of our books to make sure they have been added to the database
+    #    print(product)
 
 
 
