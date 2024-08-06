@@ -1,19 +1,21 @@
 from model import Base, session, Product, engine
 import csv
 import datetime 
+from sys import exit
+import time
 
 
 def menu():
     while True:
         print("""
             \nProducts
-              \rv) Display a product by its ID
-              \ra) View all Products
-              \rb) Search for book
+              \rv) Display a Product by its ID
+              \ra) Add a new product to the database
+              \rb) Make a backup of the entire database
               \re) Exit
             """)
         choice = input("what would you like to do? ")
-        if choice in ["v", "a", "b"]:
+        if choice in ["v", "a", "b", "e"]:
             return choice   # return will always cancel out or stop a loop
         else:
             input("""\rPlease choose one of the options above.
@@ -24,21 +26,50 @@ def menu():
 def clean_date(date_str):
 
     split_date = date_str.split("/")
-    month_date = int(split_date[0])
-    day_date = int(split_date[1])
-    year_date = int(split_date[2])
-    # date_type_variable = datetime.datetime(year=0, month=0, day=0)
-    #print(split_date)
-    return datetime.date(year=year_date, month=month_date, day=day_date)
+    try:
+        month_date = int(split_date[0])
+        day_date = int(split_date[1])
+        year_date = int(split_date[2])
+        # date_type_variable = datetime.datetime(year=0, month=0, day=0)
+        #print(split_date)
+        return_date = datetime.date(year=year_date, month=month_date, day=day_date)
+
+    except ValueError:
+        input("""
+                \n ***Date Error***
+                \r The date format should include a valid Month/Day/Year from the past
+                \rExample: 12/28/2018
+                \rPress enter to try again
+                \r*****************
+""")
+
+    else:
+        return return_date
+    
 
 
 
 def clean_price(price_str):
-    split_price = price_str.split("$")
-    splitted_price_str = split_price[1]
-    price_float = float(splitted_price_str)
-    #print(price_float)
-    return int(price_float * 100)
+
+    try:
+        split_price = price_str.split("$")
+        splitted_price_str = split_price[1]
+        price_float = float(splitted_price_str)
+        
+    except ValueError:
+        input("""
+                \n ***Price Error***
+                \r The price format should include a valid $#.## (currency symbol dollar.cents)
+                \rExample: $7.99
+                \rPress enter to try again
+                \r*****************
+""")
+    else:
+        #print(price_float)
+        return int(price_float * 100)
+    
+    
+    
 
 
 
@@ -47,7 +78,8 @@ def add_csv():
         data = csv.reader(csvfile)
         next(data)  # returns the next item in an iterator
         for row in data:
-            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none() # one_or_none returns none if there isn't a book or returns the book
+            product_in_db = session.query(Product).filter(Product.product_name==row[0]).one_or_none() 
+            # one_or_none returns none if there isn't a book or returns the book
             # this is going to either return a product if there is one or none if there isn't a book
             if product_in_db == None:
                 product_name = row[0]
@@ -67,17 +99,54 @@ def app():
     while app_running:
         choice = menu()
         if choice == "v":
-            # Add product
+            # Display a product by its ID
+            product_id = input("enter the ID of a product (1-25) ")
             pass
+
         elif choice == "a":
-            # view products
-            pass
+            # Add a new product to the database
+            name = input("product_name: ")
+
+            price_error = True
+            while price_error:
+                price = input("product_price: (Example: $4.30) ")
+                price_cleaned = clean_price(price)
+                if type(price_cleaned) == int:
+                    price_error = False
+
+
+            quantity = input("product_quantity: ")
+
+            date_error = True
+            while date_error:
+                date = input("date_updated: (Example: 12/28/2018) ")
+                date_cleaned = clean_date(date)
+                if type(date_cleaned) == datetime.date:
+                    date_error = False
+                
+            new_product = Product(product_name=name, 
+                                  product_price=price_cleaned, 
+                                  product_quantity=quantity, 
+                                  date_updated=date_cleaned)
+            session.add(new_product)
+            session.commit()
+            print("product added !!!")
+            time.sleep(3)
+            
+
         elif choice == "b":
-            # search product
+            # Make a backup of the entire database
             pass
+
+        elif choice == "e":
+            # Exit
+            print("Goodbye! ")
+            exit()
+
         else:
-            print("Goodbye ")
-            app_running = False
+            input("""\rPlease choose one of the options above.
+                  \ra letter from the following (v/a/b/e)
+                  \rPress enter to try again """)
 
 
 """
@@ -89,6 +158,10 @@ def app():
 
 ValueError: invalid literal for int() with base 10: 'date_updated'
 
+Step 12 
+Displaying a product by its ID - Menu Option V
+Create a function to handle getting and displaying a product by its product_id.
+
 
 """
 
@@ -96,17 +169,15 @@ ValueError: invalid literal for int() with base 10: 'date_updated'
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
-    #app()
+    add_csv() # we add the csv values to the database
+    app() # we use this to test the functionality of our app
 
     #add_csv() # we add the csv values to the database
-    
+
     #clean_date("7/26/2018")  # used this line to test the split function for the date data
     #clean_price("$7.99")   # we test the clean_price function, as well as the split function in it
 
-    #for product in session.query(Product): # we loop through all of our books to make sure they have been added to the database
-    #    print(product)
-
-
-
+    for product in session.query(Product): # we loop through all of our books to make sure they have been added to the database
+        print(product)
 
 
