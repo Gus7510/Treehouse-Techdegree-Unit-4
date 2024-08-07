@@ -69,7 +69,32 @@ def clean_price(price_str):
         return int(price_float * 100)
     
     
-    
+def clean_id(id_str, id_options):
+    try:
+        product_id = int(id_str)
+        
+
+    except ValueError:
+        input("""
+                \n ***Id Error***
+                \r The id format should be a number 
+                \rExample: 14
+                \rPress enter to try again
+                \r***************** """)
+        return None
+        
+    else:
+        if product_id in id_options:
+            return product_id
+        
+        else:
+            input(f"""
+                \n ***Id Error***
+                \r Options: {id_options} 
+                \r Press enter to try again
+                \r***************** """)
+            return None
+
 
 
 
@@ -98,10 +123,28 @@ def app():
     app_running = True
     while app_running:
         choice = menu()
+
         if choice == "v":
             # Display a product by its ID
-            product_id = input("enter the ID of a product (1-25) ")
-            pass
+            id_options = []
+            for product in session.query(Product):
+                id_options.append(product.product_id)
+            id_error = True
+            while id_error:
+                id_choice = input(f"""
+                \nId Options: {id_options} 
+                \rPlease enter the Product id: """)
+                id_choice = clean_id(id_choice, id_options)
+                if type(id_choice) == int:
+                    id_error = False
+            the_product = session.query(Product).filter(Product.product_id==id_choice).first()
+            print(f"""
+            \n {the_product.product_name}, 
+            \r Costs: ${the_product.product_price/100}, Amount available: {the_product.product_quantity},
+            \r last date updated: {the_product.date_updated}
+                """)
+            input("\n Press enter to go back to the main menu ")
+            
 
         elif choice == "a":
             # Add a new product to the database
@@ -161,6 +204,11 @@ ValueError: invalid literal for int() with base 10: 'date_updated'
 Step 12 
 Displaying a product by its ID - Menu Option V
 Create a function to handle getting and displaying a product by its product_id.
+
+
+Code from websites
+https://stackoverflow.com/questions/6750017/how-to-query-database-by-id-using-sqlalchemy
+
 
 
 """
