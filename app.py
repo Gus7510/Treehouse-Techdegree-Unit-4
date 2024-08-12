@@ -119,6 +119,29 @@ def add_csv():
         session.commit()
 
 
+def generate_backup():
+
+    with open("backup.csv", "w", newline='') as csvfile:
+        productwriter = csv.writer(csvfile)# fieldnames=fieldnames)
+
+        productwriter.writerow(['product_id',
+                                'product_name', 
+                                'product_price', 
+                                'product_quantity', 
+                                'date_updated'])
+        
+        for product in session.query(Product).order_by(Product.product_id):
+            productwriter.writerow([product.product_id,
+                             product.product_name,
+                             product.product_price,
+                             product.product_quantity,
+                             product.date_updated])
+    print("The data has been backed-up to the 'back-up.csv' data file")
+    
+
+
+
+
 def app():
     app_running = True
     while app_running:
@@ -174,12 +197,15 @@ def app():
             session.add(new_product)
             session.commit()
             print("product added !!!")
+            input("\n Press enter to go back to the main menu ")
             time.sleep(3)
             
 
         elif choice == "b":
             # Make a backup of the entire database
-            pass
+            generate_backup()
+            input("\n Press enter to go back to the main menu ")
+            time.sleep(3)
 
         elif choice == "e":
             # Exit
@@ -209,6 +235,10 @@ Create a function to handle getting and displaying a product by its product_id.
 Code from websites
 https://stackoverflow.com/questions/6750017/how-to-query-database-by-id-using-sqlalchemy
 
+
+Step 14
+Backup the database (Export new CSV) - Menu Option B
+Create a function to handle making a backup of the database. The backup should be written to a .csv file.
 
 
 """
