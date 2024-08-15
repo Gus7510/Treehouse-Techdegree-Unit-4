@@ -22,6 +22,8 @@ def menu():
                   \ra letter from the following (v/a/b/e)
                   \rPress enter to try again """)
 
+##################################
+
 
 def clean_date(date_str):
 
@@ -40,8 +42,7 @@ def clean_date(date_str):
                 \r The date format should include a valid Month/Day/Year from the past
                 \rExample: 12/28/2018
                 \rPress enter to try again
-                \r*****************
-""")
+                \r*****************""")
 
     else:
         return return_date
@@ -52,9 +53,8 @@ def clean_date(date_str):
 def clean_price(price_str):
 
     try:
-        split_price = price_str.split("$")
-        splitted_price_str = split_price[1]
-        price_float = float(splitted_price_str)
+        return_price = int(float(price_str.lstrip('$'))*100)
+        
         
     except ValueError:
         input("""
@@ -62,11 +62,12 @@ def clean_price(price_str):
                 \r The price format should include a valid $#.## (currency symbol dollar.cents)
                 \rExample: $7.99
                 \rPress enter to try again
-                \r*****************
-""")
+                \r*****************""")
+        return
+    
     else:
-        #print(price_float)
-        return int(price_float * 100)
+        
+        return return_price
     
     
 def clean_id(id_str, id_options):
@@ -96,7 +97,7 @@ def clean_id(id_str, id_options):
             return None
 
 
-
+##################################
 
 def add_csv():
     with open("inventory.csv") as csvfile:
@@ -119,6 +120,7 @@ def add_csv():
         session.commit()
 
 
+
 def generate_backup():
 
     with open("backup.csv", "w", newline='') as csvfile:
@@ -139,7 +141,7 @@ def generate_backup():
     print("The data has been backed-up to the 'back-up.csv' data file")
     
 
-
+##################################
 
 
 def app():
@@ -171,17 +173,36 @@ def app():
 
         elif choice == "a":
             # Add a new product to the database
-            name = input("product_name: ")
+            name_error = True
+            while name_error:
+                name = input("product_name: ")
+
+                if name != "":
+                    name_error = False
+
+            # we handle the name error (no name)
+
+            
 
             price_error = True
             while price_error:
                 price = input("product_price: (Example: $4.30) ")
+                
+                # we handle any possible price error before cleaning it
+
                 price_cleaned = clean_price(price)
-                if type(price_cleaned) == int:
+
+                if isinstance(price_cleaned, int):
                     price_error = False
 
 
-            quantity = input("product_quantity: ")
+            quantity_error = True
+            while quantity_error:
+                quantity = input("product_quantity: ")
+                if quantity.isnumeric() == True:
+                    quantity_error = False
+            # we handle the quantity error
+
 
             date_error = True
             while date_error:
@@ -227,6 +248,7 @@ def app():
 
 ValueError: invalid literal for int() with base 10: 'date_updated'
 
+
 Step 12 
 Displaying a product by its ID - Menu Option V
 Create a function to handle getting and displaying a product by its product_id.
@@ -239,6 +261,15 @@ https://stackoverflow.com/questions/6750017/how-to-query-database-by-id-using-sq
 Step 14
 Backup the database (Export new CSV) - Menu Option B
 Create a function to handle making a backup of the database. The backup should be written to a .csv file.
+
+-------------------------------------------------------------------------------------*
+Im able to add a product but I would recommend adding some error handling to this. 
+
+*Im currently able to create a product with no name, 
+and if I enter anything wrong in the price the app crashes 
+*and Im currently able to add a string as quantity.
+-------------------------------------------------------------------------------------*
+it no longer crashes
 
 
 """
@@ -253,9 +284,9 @@ if __name__ == "__main__":
     #add_csv() # we add the csv values to the database
 
     #clean_date("7/26/2018")  # used this line to test the split function for the date data
-    #clean_price("$7.99")   # we test the clean_price function, as well as the split function in it
+    #clean_price("$7.99")   # we test the clean_price function
 
-    for product in session.query(Product): # we loop through all of our books to make sure they have been added to the database
-        print(product)
+    #for product in session.query(Product): # we loop through all of our books to make sure they have been added to the database
+    #    print(product)
 
 
